@@ -1,11 +1,13 @@
 ﻿module FsRaytracer.Tracer
 
-open SixLabors.ImageSharp
 open TracerData
 open System.Numerics
-open SixLabors.ImageSharp.PixelFormats
 
-type Surface = Image<Rgba32>
+type RenderSurface = {
+    height: int
+    width: int
+    setColor: int * int -> Vector3 -> unit
+}
 
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
@@ -15,11 +17,9 @@ let color (ray: Ray) =
     let t = 0.5f * (normDirection.Y + 1.0f)
     (oneVector * (1.0f - t)) + (t * colorVector)
 
-let toRgba (vec: Vector3) = Rgba32 vec
 
-let trace (surface: Surface) =
-    let height = surface.Height
-    let width = surface.Width
+let trace (surface: RenderSurface) =
+    let { height = height; width = width; setColor = setColor } = surface
     let h = float32(height)
     let w = float32(width)
     let lowerLeft = vec3 -2.0f -1.0f -1.0f
@@ -33,6 +33,6 @@ let trace (surface: Surface) =
             let v = float32(j) / h
             let ray = makeRay origin (lowerLeft + (mul u horiz) + (mul v vert))
             let col = color ray
-            surface.Item (i, height - 1 - j) <- (toRgba col)
+            setColor (i, j) col
 
     surface
