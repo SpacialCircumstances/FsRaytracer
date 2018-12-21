@@ -12,11 +12,26 @@ type RenderSurface = {
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
 
-let color (ray: Ray) =
-    let normDirection = Vector3.Normalize ray.direction
-    let t = 0.5f * (normDirection.Y + 1.0f)
-    (oneVector * (1.0f - t)) + (t * colorVector)
+let sphereCenter = vec3 0.0f 0.0f -1.0f
+let sphereRadius = 0.5f
 
+let colorRed = vec3 1.0f 0.0f 0.0f
+
+let hitSphere (center: Vector3) (radius: float32) (ray: Ray) =
+    let oc = ray.origin - center
+    let a = dotP ray.direction ray.direction
+    let b = 2.0f * (dotP oc ray.direction)
+    let c = (dotP oc oc) - (radius * radius)
+    let discriminant = b * b - 4.0f * a * c
+    discriminant > 0.0f
+
+let color (ray: Ray) =
+    if (hitSphere sphereCenter sphereRadius ray) then
+        colorRed
+    else
+        let normDirection = Vector3.Normalize ray.direction
+        let t = 0.5f * (normDirection.Y + 1.0f)
+        (oneVector * (1.0f - t)) + (t * colorVector)
 
 let trace (surface: RenderSurface) =
     let { height = height; width = width; setColor = setColor } = surface
