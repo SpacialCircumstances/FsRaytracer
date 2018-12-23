@@ -20,6 +20,7 @@ type Sphere = {
 
 type SceneObject =
     | Sphere of Sphere
+    | Objects of SceneObject seq
 
 let inline makeRay (origin: Vector3) (direction: Vector3) = { origin = origin; direction = direction }
 
@@ -33,7 +34,7 @@ let inline dotP (vec1: Vector3) (vec2: Vector3) = Vector3.Dot(vec1, vec2)
 
 let inline norm (vec: Vector3) = Vector3.Normalize(vec)
 
-let hit (ray: Ray) (tmin: float32) (tmax: float32) (body: SceneObject) =
+let rec hit (ray: Ray) (tmin: float32) (tmax: float32) (body: SceneObject) =
     match body with
         | Sphere sphere ->
             let isHit t =
@@ -57,3 +58,12 @@ let hit (ray: Ray) (tmin: float32) (tmax: float32) (body: SceneObject) =
                         Some hit
             else
                 None
+
+        | Objects objects ->
+            let hitFound, _ = Seq.fold (fun (currentHit, closest) o ->
+                                let hitThis = hit ray tmin closest o
+                                match hitThis with
+                                    | None -> (currentHit, closest)
+                                    | Some newHit -> (Some newHit, newHit.parameter)
+                                ) (None, tmax) objects
+            hitFound
