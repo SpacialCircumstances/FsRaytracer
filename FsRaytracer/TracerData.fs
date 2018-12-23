@@ -17,6 +17,9 @@ type Hit = {
 
 let inline makeRay (origin: Vector3) (direction: Vector3) = { origin = origin; direction = direction }
 
+let inline castRay (camera: Camera) (u: float32) (v: float32) =
+    makeRay camera.origin (camera.lowerLeftCorner + (mul u camera.horizontal) + (mul v camera.vertical) - camera.origin)
+
 let inline calculatePosition (ray: Ray) (p: float32) = ray.origin + (p * ray.direction)
 
 let rec hit (ray: Ray) (tmin: float32) (tmax: float32) (body: SceneObject) =
