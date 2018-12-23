@@ -3,6 +3,7 @@
 open TracerData
 open System.Numerics
 open System
+open MathExt
 
 type RenderSurface = {
     height: int

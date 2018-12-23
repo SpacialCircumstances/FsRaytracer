@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="MathExt.fs" />
     <Compile Include="TracerData.fs" />
     <Compile Include="Tracer.fs" />
   </ItemGroup>
