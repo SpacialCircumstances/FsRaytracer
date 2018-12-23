@@ -12,12 +12,14 @@ type RenderSurface = {
     setColor: int * int -> Vector3 -> unit
 }
 
+type Antialiasing = Off | On of int
+
 type RenderSettings = {
     rngSeed: int option
-    aaLevel: int
+    antialiasing: Antialiasing
 }
 
-let defaultSettings = { rngSeed = None; aaLevel = 100 }
+let defaultSettings = { rngSeed = None; antialiasing = On 100 }
 
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
@@ -39,23 +41,34 @@ let private createRng (seed: int option) =
                     | Some seed -> Random(seed)
     fun () -> float32 (random.NextDouble ())
  
-let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surface: RenderSurface) =
-    let rng = createRng settings.rngSeed
-    let aaLevel = settings.aaLevel
-    let { height = height; width = width; setColor = setColor } = surface
-    let h = float32(height)
-    let w = float32(width)
-
-    for j = (height - 1) downto 0 do
-        for i = 0 to (width - 1) do
-            let fullColor = [ 0..aaLevel ] 
+let createRenderer (w: int) (h: int) (settings: RenderSettings) =
+    match settings.antialiasing with
+        | Off ->
+            let render (world: SceneObject) (camera: Camera) (x: int) (y: int) =
+                Vector3.Zero
+            render
+        | On level ->
+            let w = float32 w
+            let h = float32 h
+            let rng = createRng settings.rngSeed
+            let render (world: SceneObject) (camera: Camera) (x: int) (y: int) =
+                let fullColor = [ 0..level ] 
                                 |> Seq.fold (fun c _ ->
-                                    let u = (float32(i) + rng ()) / w
-                                    let v = (float32(j) + rng ()) / h
+                                    let u = (float32(x) + rng ()) / w
+                                    let v = (float32(y) + rng ()) / h
                                     let ray = castRay camera u v
                                     c + color ray world) Vector3.Zero
                 
-            let col = div (float32 aaLevel) fullColor
-            setColor (i, j) col
+                div (float32 level) fullColor
+            render
+
+let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surface: RenderSurface) =
+    let { height = height; width = width; setColor = setColor } = surface
+    let renderer = createRenderer width height settings
+
+    for y = (height - 1) downto 0 do
+        for x = 0 to (width - 1) do
+            let col = renderer world camera x y
+            setColor (x, y) col
 
     surface
