@@ -36,12 +36,24 @@ let inline norm (vec: Vector3) = Vector3.Normalize(vec)
 let hit (ray: Ray) (tmin: float32) (tmax: float32) (body: SceneObject) =
     match body with
         | Sphere sphere ->
+            let isHit t =
+                if t < tmax && t > tmin then
+                    let pos = (calculatePosition ray t)
+                    Some { parameter = t; position = pos; normal = (pos - sphere.center) / sphere.radius }
+                else
+                None
             let oc = ray.origin - sphere.center
             let a = dotP ray.direction ray.direction
             let b = dotP oc ray.direction
             let c = (dotP oc oc) - (sphere.radius * sphere.radius)
             let discriminant = (b * b) - (a * c)
             if discriminant > 0.0f then
-                ()
+                let t1 = (-b - (sqrt (b * b) - (a * c))) / a
+                match (isHit t1) with
+                    | None ->
+                        let t2 = (-b + (sqrt (b * b) - (a * c))) / a
+                        isHit t2
+                    | Some hit ->
+                        Some hit
             else
-                ()
+                None
