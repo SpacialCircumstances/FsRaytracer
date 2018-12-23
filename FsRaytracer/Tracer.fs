@@ -48,11 +48,12 @@ let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surf
 
     for j = (height - 1) downto 0 do
         for i = 0 to (width - 1) do
-            let fullColor = Seq.fold (fun c _ ->
-                let u = (float32(i) + rng ()) / w
-                let v = (float32(j) + rng ()) / h
-                let ray = castRay camera u v
-                c + color ray world) Vector3.Zero [ 0..aaLevel ]
+            let fullColor = [ 0..aaLevel ] 
+                                |> Seq.fold (fun c _ ->
+                                    let u = (float32(i) + rng ()) / w
+                                    let v = (float32(j) + rng ()) / h
+                                    let ray = castRay camera u v
+                                    c + color ray world) Vector3.Zero
                 
             let col = div (float32 aaLevel) fullColor
             setColor (i, j) col
