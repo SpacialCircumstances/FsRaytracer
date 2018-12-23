@@ -14,16 +14,15 @@ type RenderSurface = {
 
 type RenderSettings = {
     rngSeed: int option
+    aaLevel: int
 }
 
-let defaultSettings = { rngSeed = None }
+let defaultSettings = { rngSeed = None; aaLevel = 100 }
 
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
 
 let colorRed = vec3 1.0f 0.0f 0.0f
-
-let aaLevel = 100
 
 let color (ray: Ray) (world: SceneObject) =
     match hit ray 0.0f Single.MaxValue world with
@@ -42,6 +41,7 @@ let private createRng (seed: int option) =
  
 let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surface: RenderSurface) =
     let rng = createRng settings.rngSeed
+    let aaLevel = settings.aaLevel
     let { height = height; width = width; setColor = setColor } = surface
     let h = float32(height)
     let w = float32(width)
