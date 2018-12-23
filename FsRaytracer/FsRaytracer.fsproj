@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="MathExt.fs" />
+    <Compile Include="Scene.fs" />
     <Compile Include="TracerData.fs" />
     <Compile Include="Tracer.fs" />
   </ItemGroup>

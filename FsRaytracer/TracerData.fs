@@ -2,6 +2,7 @@
 
 open System.Numerics
 open MathExt
+open Scene
 
 type Ray = {
     origin: Vector3
@@ -14,18 +15,9 @@ type Hit = {
     normal: Vector3
 }
 
-type Sphere = {
-    center: Vector3
-    radius: float32
-}
-
-type SceneObject =
-    | Sphere of Sphere
-    | Objects of SceneObject seq
-
 let inline makeRay (origin: Vector3) (direction: Vector3) = { origin = origin; direction = direction }
 
-let calculatePosition (ray: Ray) (p: float32) = ray.origin + (p * ray.direction)
+let inline calculatePosition (ray: Ray) (p: float32) = ray.origin + (p * ray.direction)
 
 let rec hit (ray: Ray) (tmin: float32) (tmax: float32) (body: SceneObject) =
     match body with

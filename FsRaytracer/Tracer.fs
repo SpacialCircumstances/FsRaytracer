@@ -4,6 +4,7 @@ open TracerData
 open System.Numerics
 open System
 open MathExt
+open Scene
 
 type RenderSurface = {
     height: int

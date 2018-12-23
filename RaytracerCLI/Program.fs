@@ -5,7 +5,8 @@ open SixLabors.ImageSharp
 open SixLabors.ImageSharp.PixelFormats
 open FsRaytracer.Tracer
 open System.Numerics
-open FsRaytracer.TracerData
+open FsRaytracer.MathExt
+open FsRaytracer.Scene
 
 let toRgba32 (vec: Vector3) = Rgba32 vec
 
