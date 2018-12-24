@@ -44,8 +44,13 @@ let private createRng (seed: int option) =
 let createRenderer (w: int) (h: int) (settings: RenderSettings) =
     match settings.antialiasing with
         | Off ->
+            let w = float32 w
+            let h = float32 h
             let render (world: SceneObject) (camera: Camera) (x: int) (y: int) =
-                Vector3.Zero
+                let u = (float32 x) / w
+                let v = (float32 y) / h
+                let ray = castRay camera u v
+                color ray world
             render
         | On level ->
             let w = float32 w
@@ -54,8 +59,8 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
             let render (world: SceneObject) (camera: Camera) (x: int) (y: int) =
                 let fullColor = [ 0..level ] 
                                 |> Seq.fold (fun c _ ->
-                                    let u = (float32(x) + rng ()) / w
-                                    let v = (float32(y) + rng ()) / h
+                                    let u = (float32 x + rng ()) / w
+                                    let v = (float32 y + rng ()) / h
                                     let ray = castRay camera u v
                                     c + color ray world) Vector3.Zero
                 
