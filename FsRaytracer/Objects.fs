@@ -40,3 +40,15 @@ let sphere (center: Vector3) (radius: float32) =
             isHit ((-b - (sqrt discriminant)) / (2.0f * a))
 
     { hit = hitDetection }
+
+let group (bodies: SceneBody seq) =
+    let hitDetection ray tmin tmax =
+        let hitFound, _ = Seq.fold (fun (currentHit, closest) o ->
+                                let hitThis = o.hit ray tmin closest
+                                match hitThis with
+                                    | None -> (currentHit, closest)
+                                    | Some newHit -> (Some newHit, newHit.parameter)
+                                ) (None, tmax) bodies
+        hitFound
+
+    { hit = hitDetection }
