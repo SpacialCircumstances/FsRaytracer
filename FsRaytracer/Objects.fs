@@ -3,12 +3,26 @@
 open System.Numerics
 open MathExt
 
+type Camera = {
+    origin: Vector3
+    lowerLeftCorner: Vector3
+    horizontal: Vector3
+    vertical: Vector3
+}
+
+let defaultCamera = { origin = (vec3 0.0f 0.0f 0.0f); vertical = (vec3 0.0f 2.0f 0.0f); horizontal = (vec3 4.0f 0.0f 0.0f); lowerLeftCorner = (vec3 -2.0f -1.0f -1.0f) }
+
 type Ray = {
     origin: Vector3
     direction: Vector3
 }
 
 let inline calculatePosition (ray: Ray) (p: float32) = ray.origin + (p * ray.direction)
+
+let inline makeRay (origin: Vector3) (direction: Vector3) = { origin = origin; direction = direction }
+
+let inline castRay (camera: Camera) (u: float32) (v: float32) =
+    makeRay camera.origin (camera.lowerLeftCorner + (mul u camera.horizontal) + (mul v camera.vertical) - camera.origin)
 
 type Hit = {
     parameter: float32

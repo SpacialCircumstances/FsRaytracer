@@ -1,10 +1,8 @@
 ﻿module FsRaytracer.Tracer
 
-open TracerData
 open System.Numerics
 open System
 open MathExt
-open Scene
 open Objects
 
 type RenderSurface = {
@@ -30,8 +28,8 @@ let randomInUnitSphere (rng: unit -> float32) =
     let randomNumbers () = Seq.initInfinite (fun _ -> rng ())
     Seq.zip3 (randomNumbers ()) (randomNumbers ()) (randomNumbers ()) |> Seq.find (fun (x, y, z) -> ((mul 2.0f (vec3 x y z)) - oneVector).LengthSquared () < 1.0f) |> fun (a, b, c) -> vec3 a b c
 
-let rec color (ray: Ray) (rng: unit -> float32) (world: SceneObject) =
-    match hit ray 0.001f Single.MaxValue world with
+let rec color (ray: Ray) (rng: unit -> float32) (world: SceneBody) =
+    match world.hit ray 0.001f Single.MaxValue with
         | None ->
             let unitDirection = norm ray.direction
             let t = 0.5f * (unitDirection.Y + 1.0f)
@@ -55,7 +53,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
             let w = float32 w
             let h = float32 h
             let rng = createRng settings.rngSeed
-            let render (world: SceneObject) (camera: Camera) (x: int) (y: int) =
+            let render (world: SceneBody) (camera: Camera) (x: int) (y: int) =
                 let u = (float32 x) / w
                 let v = (float32 y) / h
                 let ray = castRay camera u v
@@ -65,7 +63,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
             let w = float32 w
             let h = float32 h
             let rng = createRng settings.rngSeed
-            let render (world: SceneObject) (camera: Camera) (x: int) (y: int) =
+            let render (world: SceneBody) (camera: Camera) (x: int) (y: int) =
                 let fullColor = [ 0..level ] 
                                 |> Seq.fold (fun c _ ->
                                     let u = (float32 x + rng ()) / w
@@ -76,7 +74,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
                 colorModification (div (float32 level) fullColor)
             render
 
-let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surface: RenderSurface) =
+let trace (camera: Camera) (world: SceneBody) (settings: RenderSettings) (surface: RenderSurface) =
     let { height = height; width = width; setColor = setColor } = surface
     let renderer = createRenderer width height settings
 

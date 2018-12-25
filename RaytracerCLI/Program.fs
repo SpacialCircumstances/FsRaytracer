@@ -6,7 +6,7 @@ open SixLabors.ImageSharp.PixelFormats
 open FsRaytracer.Tracer
 open System.Numerics
 open FsRaytracer.MathExt
-open FsRaytracer.Scene
+open FsRaytracer.Objects
 
 let toRgba32 (vec: Vector3) = Rgba32 vec
 
@@ -17,7 +17,7 @@ let imageSurface (image: Image<Rgba32>) =
 
 [<EntryPoint>]
 let main argv =
-    let world = Objects [ Sphere { center = (vec3 0.0f 0.0f -1.0f); radius = 0.5f }; Sphere { center = (vec3 0.0f -100.5f -1.0f); radius = 100.0f } ]
+    let world = group [ sphere (vec3 0.0f 0.0f -1.0f) 0.5f; sphere (vec3 0.0f -100.5f -1.0f) 100.0f ]
     let image = new Image<Rgba32>(200, 100)
     let traced = trace defaultCamera world defaultSettings (imageSurface image)
     image.Save("output.png")
