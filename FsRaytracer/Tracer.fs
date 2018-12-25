@@ -17,16 +17,15 @@ type Antialiasing = Off | On of int
 type RenderSettings = {
     rngSeed: int option
     antialiasing: Antialiasing
+    gammaCorrectColors: bool
 }
 
-let defaultSettings = { rngSeed = None; antialiasing = On 100 }
+let defaultSettings = { rngSeed = None; antialiasing = On 100; gammaCorrectColors = true }
 
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
 
 let colorRed = vec3 1.0f 0.0f 0.0f
-
-let gammaCorrectColor (oldVec: Vector3) = vec3 (sqrt oldVec.X) (sqrt oldVec.Y) (sqrt oldVec.Z)
 
 let randomInUnitSphere (rng: unit -> float32) =
     let randomNumbers () = Seq.initInfinite (fun _ -> rng ())
@@ -49,6 +48,9 @@ let private createRng (seed: int option) =
     fun () -> float32 (random.NextDouble ())
  
 let createRenderer (w: int) (h: int) (settings: RenderSettings) =
+    let colorModification = match settings.gammaCorrectColors with
+                                | true -> (fun (oldVec: Vector3) -> vec3 (sqrt oldVec.X) (sqrt oldVec.Y) (sqrt oldVec.Z))
+                                | false -> id
     match settings.antialiasing with
         | Off ->
             let w = float32 w
@@ -58,7 +60,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
                 let u = (float32 x) / w
                 let v = (float32 y) / h
                 let ray = castRay camera u v
-                color ray rng world
+                colorModification (color ray rng world)
             render
         | On level ->
             let w = float32 w
@@ -72,7 +74,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
                                     let ray = castRay camera u v
                                     c + color ray rng world) Vector3.Zero
                 
-                div (float32 level) fullColor
+                colorModification (div (float32 level) fullColor)
             render
 
 let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surface: RenderSurface) =
@@ -82,6 +84,6 @@ let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surf
     for y = (height - 1) downto 0 do
         for x = 0 to (width - 1) do
             let col = renderer world camera x y
-            setColor (x, y) (gammaCorrectColor col)
+            setColor (x, y) col
         
     surface
