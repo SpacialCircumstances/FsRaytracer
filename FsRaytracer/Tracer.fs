@@ -25,8 +25,6 @@ let defaultSettings = { rngSeed = None; antialiasing = On 100; gammaCorrectColor
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
 
-let colorRed = vec3 1.0f 0.0f 0.0f
-
 let randomInUnitSphere (rng: unit -> float32) =
     let randomNumbers () = Seq.initInfinite (fun _ -> rng ())
     Seq.zip3 (randomNumbers ()) (randomNumbers ()) (randomNumbers ()) |> Seq.find (fun (x, y, z) -> ((mul 2.0f (vec3 x y z)) - oneVector).LengthSquared () < 1.0f) |> fun (a, b, c) -> vec3 a b c
