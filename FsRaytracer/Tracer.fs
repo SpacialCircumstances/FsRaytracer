@@ -30,14 +30,15 @@ let randomInUnitSphere (rng: unit -> float32) =
     let randomNumbers () = Seq.initInfinite (fun _ -> rng ())
     Seq.zip3 (randomNumbers ()) (randomNumbers ()) (randomNumbers ()) |> Seq.find (fun (x, y, z) -> ((mul 2.0f (vec3 x y z)) - oneVector).LengthSquared () < 1.0f) |> fun (a, b, c) -> vec3 a b c
 
-let color (ray: Ray) (world: SceneObject) =
+let rec color (ray: Ray) (rng: unit -> float32) (world: SceneObject) =
     match hit ray 0.0f Single.MaxValue world with
         | None ->
             let unitDirection = norm ray.direction
             let t = 0.5f * (unitDirection.Y + 1.0f)
             (1.0f - t) * oneVector + (t * colorVector)
         | Some hit ->
-            0.5f * (hit.normal + oneVector)
+            let target = hit.position + hit.normal + (randomInUnitSphere rng)
+            0.5f * (color (makeRay hit.position (target - hit.position)) rng world)
 
 let private createRng (seed: int option) =
     let random = match seed with
@@ -50,11 +51,12 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
         | Off ->
             let w = float32 w
             let h = float32 h
+            let rng = createRng settings.rngSeed
             let render (world: SceneObject) (camera: Camera) (x: int) (y: int) =
                 let u = (float32 x) / w
                 let v = (float32 y) / h
                 let ray = castRay camera u v
-                color ray world
+                color ray rng world
             render
         | On level ->
             let w = float32 w
@@ -66,7 +68,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
                                     let u = (float32 x + rng ()) / w
                                     let v = (float32 y + rng ()) / h
                                     let ray = castRay camera u v
-                                    c + color ray world) Vector3.Zero
+                                    c + color ray rng world) Vector3.Zero
                 
                 div (float32 level) fullColor
             render
