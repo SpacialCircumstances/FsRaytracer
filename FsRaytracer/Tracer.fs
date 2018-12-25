@@ -26,12 +26,14 @@ let colorVector = vec3 0.5f 0.7f 1.0f
 
 let colorRed = vec3 1.0f 0.0f 0.0f
 
+let gammaCorrectColor (oldVec: Vector3) = vec3 (sqrt oldVec.X) (sqrt oldVec.Y) (sqrt oldVec.Z)
+
 let randomInUnitSphere (rng: unit -> float32) =
     let randomNumbers () = Seq.initInfinite (fun _ -> rng ())
     Seq.zip3 (randomNumbers ()) (randomNumbers ()) (randomNumbers ()) |> Seq.find (fun (x, y, z) -> ((mul 2.0f (vec3 x y z)) - oneVector).LengthSquared () < 1.0f) |> fun (a, b, c) -> vec3 a b c
 
 let rec color (ray: Ray) (rng: unit -> float32) (world: SceneObject) =
-    match hit ray 0.0f Single.MaxValue world with
+    match hit ray 0.001f Single.MaxValue world with
         | None ->
             let unitDirection = norm ray.direction
             let t = 0.5f * (unitDirection.Y + 1.0f)
@@ -80,6 +82,6 @@ let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surf
     for y = (height - 1) downto 0 do
         for x = 0 to (width - 1) do
             let col = renderer world camera x y
-            setColor (x, y) col
+            setColor (x, y) (gammaCorrectColor col)
         
     surface
