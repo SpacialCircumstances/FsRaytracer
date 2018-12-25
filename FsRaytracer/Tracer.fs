@@ -26,6 +26,10 @@ let colorVector = vec3 0.5f 0.7f 1.0f
 
 let colorRed = vec3 1.0f 0.0f 0.0f
 
+let randomInUnitSphere (rng: unit -> float32) =
+    let randomNumbers () = Seq.initInfinite (fun _ -> rng ())
+    Seq.zip3 (randomNumbers ()) (randomNumbers ()) (randomNumbers ()) |> Seq.find (fun (x, y, z) -> ((mul 2.0f (vec3 x y z)) - oneVector).LengthSquared () < 1.0f) |> fun (a, b, c) -> vec3 a b c
+
 let color (ray: Ray) (world: SceneObject) =
     match hit ray 0.0f Single.MaxValue world with
         | None ->
@@ -75,5 +79,5 @@ let trace (camera: Camera) (world: SceneObject) (settings: RenderSettings) (surf
         for x = 0 to (width - 1) do
             let col = renderer world camera x y
             setColor (x, y) col
-
+        
     surface
