@@ -5,6 +5,7 @@ open System.Numerics
 open System
 open MathExt
 open Scene
+open Objects
 
 type RenderSurface = {
     height: int
