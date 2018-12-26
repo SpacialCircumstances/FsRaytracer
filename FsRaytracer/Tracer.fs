@@ -17,19 +17,20 @@ type RenderSettings = {
     rngSeed: int option
     antialiasing: Antialiasing
     gammaCorrectColors: bool
+    maxReflections: int
 }
 
-let defaultSettings = { rngSeed = None; antialiasing = On 100; gammaCorrectColors = true }
+let defaultSettings = { rngSeed = None; antialiasing = On 100; gammaCorrectColors = true; maxReflections = 50 }
 
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
 
-let rec color (ray: Ray) (rng: unit -> float32) (world: SceneBody) (depth: int) =
+let rec color (maxDepth: int) (ray: Ray) (rng: unit -> float32) (world: SceneBody) (depth: int) =
     match world.hit ray 0.001f Single.MaxValue with
         | Some hit ->
-            if depth < 50 then
+            if depth < maxDepth then
                 match hit.material ray hit with
-                    | Some (attenuation, scattered) -> attenuation * (color scattered rng world (depth + 1))
+                    | Some (attenuation, scattered) -> attenuation * (color maxDepth scattered rng world (depth + 1))
                     | None -> Vector3.Zero
             else
                 Vector3.Zero
@@ -48,6 +49,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
     let colorModification = match settings.gammaCorrectColors with
                                 | true -> (fun (oldVec: Vector3) -> vec3 (sqrt oldVec.X) (sqrt oldVec.Y) (sqrt oldVec.Z))
                                 | false -> id
+    let color = color settings.maxReflections
     match settings.antialiasing with
         | Off ->
             let w = float32 w
