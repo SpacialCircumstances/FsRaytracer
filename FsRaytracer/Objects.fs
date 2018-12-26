@@ -12,6 +12,12 @@ type Camera = {
 
 let defaultCamera = { origin = (vec3 0.0f 0.0f 0.0f); vertical = (vec3 0.0f 2.0f 0.0f); horizontal = (vec3 4.0f 0.0f 0.0f); lowerLeftCorner = (vec3 -2.0f -1.0f -1.0f) }
 
+type Rng = unit -> float32
+
+let randomInUnitSphere (rng: Rng) =
+    let randomNumbers () = Seq.initInfinite (fun _ -> rng ())
+    Seq.zip3 (randomNumbers ()) (randomNumbers ()) (randomNumbers ()) |> Seq.find (fun (x, y, z) -> ((mul 2.0f (vec3 x y z)) - Vector3.One).LengthSquared () < 1.0f) |> fun (a, b, c) -> vec3 a b c
+
 type Ray = {
     origin: Vector3
     direction: Vector3
@@ -71,3 +77,9 @@ let group (bodies: SceneBody seq)  =
         hitFound
     
     { hit = hitDetection }
+
+let lambertian (albedo: Vector3) (rng: Rng) =
+    fun (ray: Ray) (hit: Hit) ->
+        let target = hit.position + hit.normal + (randomInUnitSphere rng)
+        let scattered = makeRay hit.position (target - hit.position)
+        Some (albedo, scattered)
