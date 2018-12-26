@@ -87,10 +87,11 @@ let lambertian (albedo: Vector3) (rng: Rng) =
         let scattered = makeRay hit.position (target - hit.position)
         Some (albedo, scattered)
 
-let metal (albedo: Vector3) =
+let metal (albedo: Vector3) (fuzziness: float32) (rng: Rng) =
+    if fuzziness > 1.0f then invalidArg "fuzziness" "Must be <= 1.0"
     fun (ray: Ray) (hit: Hit) ->
         let reflected = reflect (norm ray.direction) hit.normal
-        let scattered = makeRay hit.position reflected
+        let scattered = makeRay hit.position (reflected + (randomInUnitSphere rng * fuzziness))
         if dotP scattered.direction hit.normal > 0.0f then
             Some (albedo, scattered)
         else None
