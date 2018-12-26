@@ -24,15 +24,19 @@ let defaultSettings = { rngSeed = None; antialiasing = On 100; gammaCorrectColor
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
 
-let rec color (ray: Ray) (rng: unit -> float32) (world: SceneBody) =
+let rec color (ray: Ray) (rng: unit -> float32) (world: SceneBody) (depth: int) =
     match world.hit ray 0.001f Single.MaxValue with
+        | Some hit ->
+            if depth < 50 then
+                match hit.material ray hit with
+                    | Some (attenuation, scattered) -> attenuation * (color scattered rng world (depth + 1))
+                    | None -> Vector3.Zero
+            else
+                Vector3.Zero
         | None ->
             let unitDirection = norm ray.direction
             let t = 0.5f * (unitDirection.Y + 1.0f)
             (1.0f - t) * oneVector + (t * colorVector)
-        | Some hit ->
-            let target = hit.position + hit.normal + (randomInUnitSphere rng)
-            0.5f * (color (makeRay hit.position (target - hit.position)) rng world)
 
 let private createRng (seed: int option) =
     let random = match seed with
@@ -53,7 +57,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
                 let u = (float32 x) / w
                 let v = (float32 y) / h
                 let ray = castRay camera u v
-                colorModification (color ray rng world)
+                colorModification (color ray rng world 0)
             render
         | On level ->
             let w = float32 w
@@ -65,7 +69,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
                                     let u = (float32 x + rng ()) / w
                                     let v = (float32 y + rng ()) / h
                                     let ray = castRay camera u v
-                                    c + color ray rng world) Vector3.Zero
+                                    c + color ray rng world 0) Vector3.Zero
                 
                 colorModification (div (float32 level) fullColor)
             render

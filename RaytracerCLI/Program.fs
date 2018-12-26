@@ -10,6 +10,10 @@ open FsRaytracer.Objects
 
 let toRgba32 (vec: Vector3) = Rgba32 vec
 
+let random = Random()
+
+let rng () = float32 (random.NextDouble ())
+
 let imageSurface (image: Image<Rgba32>) =
     let setColor (x, y) col =
         image.Item (x, image.Height - 1 - y) <- (toRgba32 col)
@@ -17,7 +21,7 @@ let imageSurface (image: Image<Rgba32>) =
 
 [<EntryPoint>]
 let main argv =
-    let world = group [ sphere (vec3 0.0f 0.0f -1.0f) 0.5f dummyMaterial; sphere (vec3 0.0f -100.5f -1.0f) 100.0f dummyMaterial ]
+    let world = group [ sphere (vec3 0.0f 0.0f -1.0f) 0.5f (metal (vec3 0.8f 0.6f 0.4f)); sphere (vec3 0.0f -100.5f -1.0f) 100.0f (lambertian (vec3 0.5f 0.6f 0.3f) rng) ]
     let image = new Image<Rgba32>(200, 100)
     let traced = trace defaultCamera world defaultSettings (imageSurface image)
     image.Save("output.png")
