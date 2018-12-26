@@ -78,8 +78,19 @@ let group (bodies: SceneBody seq)  =
     
     { hit = hitDetection }
 
+let reflect (vec: Vector3) (normal: Vector3) =
+    vec - ((2.0f * (dotP vec normal)) * normal)
+
 let lambertian (albedo: Vector3) (rng: Rng) =
     fun (ray: Ray) (hit: Hit) ->
         let target = hit.position + hit.normal + (randomInUnitSphere rng)
         let scattered = makeRay hit.position (target - hit.position)
         Some (albedo, scattered)
+
+let metal (albedo: Vector3) =
+    fun (ray: Ray) (hit: Hit) ->
+        let reflected = reflect (norm ray.direction) hit.normal
+        let scattered = makeRay hit.position reflected
+        if dotP scattered.direction hit.normal > 0.0f then
+            Some (albedo, scattered)
+        else None
