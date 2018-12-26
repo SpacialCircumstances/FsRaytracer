@@ -24,22 +24,25 @@ let inline makeRay (origin: Vector3) (direction: Vector3) = { origin = origin; d
 let inline castRay (camera: Camera) (u: float32) (v: float32) =
     makeRay camera.origin (camera.lowerLeftCorner + (mul u camera.horizontal) + (mul v camera.vertical) - camera.origin)
 
-type Hit = {
+type Material = Ray -> Hit -> (Vector3 * Ray) option
+
+and Hit = {
     parameter: float32
     position: Vector3
     normal: Vector3
+    material: Material
 }
 
 type SceneBody = {
     hit: Ray -> float32 -> float32 -> Hit Option
 }
 
-let sphere (center: Vector3) (radius: float32) =
+let sphere (center: Vector3) (radius: float32) (material: Material) =
     let hitDetection ray tmin tmax =
         let isHit t =
             if t < tmax && t > tmin then
                 let pos = (calculatePosition ray t)
-                Some { parameter = t; position = pos; normal = (pos - center) / radius }
+                Some { parameter = t; position = pos; normal = (pos - center) / radius; material = material }
             else
                 None
 
@@ -55,7 +58,9 @@ let sphere (center: Vector3) (radius: float32) =
 
     { hit = hitDetection }
 
-let group (bodies: SceneBody seq) =
+let dummyMaterial (r: Ray) (h: Hit) = None
+
+let group (bodies: SceneBody seq)  =
     let hitDetection ray tmin tmax =
         let hitFound, _ = Seq.fold (fun (currentHit, closest) o ->
                                 let hitThis = o.hit ray tmin closest
@@ -64,5 +69,5 @@ let group (bodies: SceneBody seq) =
                                     | Some newHit -> (Some newHit, newHit.parameter)
                                 ) (None, tmax) bodies
         hitFound
-
+    
     { hit = hitDetection }
