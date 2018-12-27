@@ -81,6 +81,15 @@ let group (bodies: SceneBody seq)  =
 let reflect (vec: Vector3) (normal: Vector3) =
     vec - ((2.0f * (dotP vec normal)) * normal)
 
+let refract (vec: Vector3) (normal: Vector3) (refrRelation: float32) =
+    let uvec = norm vec
+    let dt = dotP uvec normal
+    let discr = 1.0f - (refrRelation * refrRelation * (1.0f - (dt * dt)))
+    if discr > 0.0f then
+        Some (((uvec - (normal * dt)) * refrRelation) - (normal * (sqrt discr)))
+    else
+        None
+
 let lambertian (albedo: Vector3) (rng: Rng) =
     fun (ray: Ray) (hit: Hit) ->
         let target = hit.position + hit.normal + (randomInUnitSphere rng)
