@@ -21,8 +21,16 @@ let imageSurface (image: Image<Rgba32>) =
 
 [<EntryPoint>]
 let main argv =
-    let world = group [ sphere (vec3 0.0f 0.0f -1.0f) 0.5f (dielectric 0.1f rng); sphere (vec3 0.0f -100.5f -1.0f) 100.0f (lambertian (vec3 0.5f 0.6f 0.3f) rng) ]
-    let image = new Image<Rgba32>(200, 100)
-    let traced = trace defaultCamera world defaultSettings (imageSurface image)
+    let width = 200
+    let height = 100
+    let ar = (float32 width) / (float32 height)
+    let camera = createCamera 60.0f ar
+    let r = pi / 4.0f
+    let world = group [
+        sphere (vec3 -r 0.0f -1.0f) r (lambertian (vec3 0.0f 0.0f 1.0f) rng);
+        sphere (vec3 r 0.0f -1.0f) r (lambertian (vec3 0.0f 1.0f 0.0f) rng)
+    ]
+    let image = new Image<Rgba32>(width, height)
+    let traced = trace camera world defaultSettings (imageSurface image)
     image.Save("output.png")
     0 // return an integer exit code

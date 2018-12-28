@@ -2,6 +2,7 @@
 
 open System.Numerics
 open MathExt
+open System
 
 type Camera = {
     origin: Vector3
@@ -9,6 +10,17 @@ type Camera = {
     horizontal: Vector3
     vertical: Vector3
 }
+
+let pi = float32 Math.PI
+
+let createCamera (verticalFov: float32) (aspectRatio: float32) =
+    let theta = (verticalFov * pi) / 180.0f
+    let hh = tan (theta / 2.0f)
+    let hw = aspectRatio * hh
+    let llc = vec3 -hw -hh -1.0f
+    let horiz = vec3 (2.0f * hw) 0.0f 0.0f
+    let vert = vec3 0.0f (2.0f * hh) 0.0f
+    { origin = (vec3 0.0f 0.0f 0.0f); vertical = vert; horizontal = horiz; lowerLeftCorner = llc }
 
 let defaultCamera = { origin = (vec3 0.0f 0.0f 0.0f); vertical = (vec3 0.0f 2.0f 0.0f); horizontal = (vec3 4.0f 0.0f 0.0f); lowerLeftCorner = (vec3 -2.0f -1.0f -1.0f) }
 
