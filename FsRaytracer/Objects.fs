@@ -104,3 +104,16 @@ let metal (albedo: Vector3) (fuzziness: float32) (rng: Rng) =
         if dotP scattered.direction hit.normal > 0.0f then
             Some (albedo, scattered)
         else None
+
+let dielectric (ri: float32) =
+    fun (ray: Ray) (hit: Hit) ->
+        let (outwardNormal, refr) = if dotP ray.direction hit.normal > 0.0f then
+                                        (-hit.normal, ri)
+                                    else
+                                        (hit.normal, 1.0f / ri)
+        match refract ray.direction outwardNormal refr with
+            | Some refracted ->
+                Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position refracted)
+            | None ->
+                let reflected = reflect ray.direction hit.normal
+                Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position reflected)
