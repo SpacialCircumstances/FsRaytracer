@@ -105,15 +105,25 @@ let metal (albedo: Vector3) (fuzziness: float32) (rng: Rng) =
             Some (albedo, scattered)
         else None
 
-let dielectric (ri: float32) =
+let schlick (cosine: float32) (refr: float32) =
+    let rr = (1.0f - refr) / (1.0f + refr)
+    let r = rr * rr
+    r + ((1.0f - r) * (pown (1.0f - cosine) 5))
+
+let dielectric (ri: float32) (rng: Rng) =
     fun (ray: Ray) (hit: Hit) ->
-        let (outwardNormal, refr) = if dotP ray.direction hit.normal > 0.0f then
-                                        (-hit.normal, ri)
-                                    else
-                                        (hit.normal, 1.0f / ri)
+        let (outwardNormal, refr, cosine) = if dotP ray.direction hit.normal > 0.0f then
+                                                (-hit.normal, ri, ri * (dotP ray.direction hit.normal) / ray.direction.Length())
+                                            else
+                                                (hit.normal, 1.0f / ri, - (dotP ray.direction hit.normal) / ray.direction.Length())
         match refract ray.direction outwardNormal refr with
-            | Some refracted ->
-                Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position refracted)
-            | None ->
-                let reflected = reflect ray.direction hit.normal
-                Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position reflected)
+                            | Some refracted ->
+                                let reflectProb = schlick cosine ri
+                                if rng () < reflectProb then
+                                    Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position (reflect ray.direction hit.normal))
+                                else
+                                    Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position refracted)
+                            | None ->
+                                Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position (reflect ray.direction hit.normal))
+        
+                                
