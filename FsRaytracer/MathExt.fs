@@ -11,3 +11,7 @@ let inline div (s: float32) (vec: Vector3) = Vector3.Divide(vec, s)
 let inline dotP (vec1: Vector3) (vec2: Vector3) = Vector3.Dot(vec1, vec2)
 
 let inline norm (vec: Vector3) = Vector3.Normalize(vec)
+
+let pi = float32 System.Math.PI
+
+let inline crossP (vec1: Vector3) (vec2: Vector3) = Vector3.Cross(vec1, vec2)

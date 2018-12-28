@@ -2,7 +2,6 @@
 
 open System.Numerics
 open MathExt
-open System
 
 type Camera = {
     origin: Vector3
@@ -10,10 +9,6 @@ type Camera = {
     horizontal: Vector3
     vertical: Vector3
 }
-
-let pi = float32 Math.PI
-
-let inline crossP (vec1: Vector3) (vec2: Vector3) = Vector3.Cross(vec1, vec2)
 
 let createCamera (lookFrom: Vector3) (lookAt: Vector3) (up: Vector3) (verticalFov: float32) (aspectRatio: float32) =
     let theta = (verticalFov * pi) / 180.0f
