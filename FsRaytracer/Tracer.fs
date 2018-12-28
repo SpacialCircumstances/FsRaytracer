@@ -17,13 +17,12 @@ type RenderSurface = {
 type Antialiasing = Off | On of int
 
 type RenderSettings = {
-    rngSeed: int option
     antialiasing: Antialiasing
     gammaCorrectColors: bool
     maxReflections: int
 }
 
-let defaultSettings = { rngSeed = None; antialiasing = On 100; gammaCorrectColors = true; maxReflections = 50 }
+let defaultSettings = { antialiasing = On 100; gammaCorrectColors = true; maxReflections = 50 }
 
 let oneVector = vec3 1.0f 1.0f 1.0f
 let colorVector = vec3 0.5f 0.7f 1.0f
@@ -42,11 +41,7 @@ let rec color (maxDepth: int) (ray: Ray) (rng: unit -> float32) (world: SceneBod
             let t = 0.5f * (unitDirection.Y + 1.0f)
             (1.0f - t) * oneVector + (t * colorVector)
 
-let private createRng (seed: int option) =
-    (*let random = match seed with
-                    | None -> Random()
-                    | Some seed -> Random(seed)
-    fun () -> float32 (random.NextDouble ())*)
+let private createRng () =
     multithreadRandom
  
 let createRenderer (w: int) (h: int) (settings: RenderSettings) =
@@ -58,7 +53,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
         | Off ->
             let w = float32 w
             let h = float32 h
-            let rng = createRng settings.rngSeed
+            let rng = createRng ()
             let render (world: SceneBody) (camera: Camera) (x: int) (y: int) =
                 let u = (float32 x) / w
                 let v = (float32 y) / h
@@ -68,7 +63,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
         | On level ->
             let w = float32 w
             let h = float32 h
-            let rng = createRng settings.rngSeed
+            let rng = createRng ()
             let render (world: SceneBody) (camera: Camera) (x: int) (y: int) =
                 let combinedColor = [ 0..level ] 
                                     |> Seq.fold (fun c _ ->
