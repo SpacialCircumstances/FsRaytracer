@@ -13,14 +13,21 @@ type Camera = {
 
 let pi = float32 Math.PI
 
-let createCamera (verticalFov: float32) (aspectRatio: float32) =
+let inline crossP (vec1: Vector3) (vec2: Vector3) = Vector3.Cross(vec1, vec2)
+
+let createCamera (lookFrom: Vector3) (lookAt: Vector3) (up: Vector3) (verticalFov: float32) (aspectRatio: float32) =
     let theta = (verticalFov * pi) / 180.0f
     let hh = tan (theta / 2.0f)
     let hw = aspectRatio * hh
-    let llc = vec3 -hw -hh -1.0f
-    let horiz = vec3 (2.0f * hw) 0.0f 0.0f
-    let vert = vec3 0.0f (2.0f * hh) 0.0f
-    { origin = (vec3 0.0f 0.0f 0.0f); vertical = vert; horizontal = horiz; lowerLeftCorner = llc }
+    let w = norm (lookFrom - lookAt)
+    let u = norm (crossP up w)
+    let v = crossP w u
+    let llc = lookFrom - (u * hw) - (v * hh) - w
+    let horiz = 2.0f * hw * u
+    let vert = 2.0f * hh * v
+    { origin = lookFrom; vertical = vert; horizontal = horiz; lowerLeftCorner = llc }
+
+let fromOrigin = createCamera Vector3.Zero (vec3 0.0f 0.0f -1.0f) (vec3 0.0f 1.0f 0.0f)
 
 let defaultCamera = { origin = (vec3 0.0f 0.0f 0.0f); vertical = (vec3 0.0f 2.0f 0.0f); horizontal = (vec3 4.0f 0.0f 0.0f); lowerLeftCorner = (vec3 -2.0f -1.0f -1.0f) }
 
