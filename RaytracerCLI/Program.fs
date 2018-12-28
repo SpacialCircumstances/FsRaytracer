@@ -31,6 +31,8 @@ let main argv =
         sphere (vec3 r 0.0f -1.0f) r (lambertian (vec3 0.0f 1.0f 0.0f) rng)
     ]
     let image = new Image<Rgba32>(width, height)
-    let traced = trace camera world defaultSettings (imageSurface image)
+    let time = trace camera world defaultSettings (imageSurface image)
     image.Save("output.png")
+    printfn "Rendering: %fms" time.TotalMilliseconds
+    do System.Console.ReadKey() |> ignore
     0 // return an integer exit code
