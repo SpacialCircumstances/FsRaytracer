@@ -42,10 +42,11 @@ let rec color (maxDepth: int) (ray: Ray) (rng: unit -> float32) (world: SceneBod
             (1.0f - t) * oneVector + (t * colorVector)
 
 let private createRng (seed: int option) =
-    let random = match seed with
+    (*let random = match seed with
                     | None -> Random()
                     | Some seed -> Random(seed)
-    fun () -> float32 (random.NextDouble ())
+    fun () -> float32 (random.NextDouble ())*)
+    multithreadRandom
  
 let createRenderer (w: int) (h: int) (settings: RenderSettings) =
     let colorModification = match settings.gammaCorrectColors with
@@ -68,20 +69,20 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
             let h = float32 h
             let rng = createRng settings.rngSeed
             let render (world: SceneBody) (camera: Camera) (x: int) (y: int) =
-                (*let combinedColor = [ 0..level ]
+                let combinedColor = [ 0..level ]
                                     |> PSeq.map (fun _ -> 
                                         let u = (float32 x + rng ()) / w
                                         let v = (float32 y + rng ()) / h
                                         let ray = castRay camera u v
                                         color ray rng world 0)
                                     |> PSeq.fold (fun v n -> v + n) Vector3.Zero
-                                    |> div (float32 level)*)
-                let combinedColor = [ 0..level ] 
+                                    |> div (float32 level)
+                (*let combinedColor = [ 0..level ] 
                                     |> Seq.fold (fun c _ ->
                                     let u = (float32 x + rng ()) / w
                                     let v = (float32 y + rng ()) / h
                                     let ray = castRay camera u v
-                                    c + color ray rng world 0) Vector3.Zero
+                                    c + color ray rng world 0) Vector3.Zero*)
                 
                 colorModification (div (float32 level) combinedColor)
             render

@@ -10,9 +10,7 @@ open FsRaytracer.Objects
 
 let toRgba32 (vec: Vector3) = Rgba32 vec
 
-let random = Random()
-
-let rng () = float32 (random.NextDouble ())
+let rng = multithreadRandom
 
 let imageSurface (image: Image<Rgba32>) =
     let setColor (x, y) col =

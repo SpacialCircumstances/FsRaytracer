@@ -1,6 +1,8 @@
 ﻿module FsRaytracer.MathExt
 
 open System.Numerics
+open System.Threading
+open System
 
 let inline vec3 (x: float32) (y: float32) (z: float32) = Vector3(x, y, z)
 
@@ -15,3 +17,7 @@ let inline norm (vec: Vector3) = Vector3.Normalize(vec)
 let pi = float32 System.Math.PI
 
 let inline crossP (vec1: Vector3) (vec2: Vector3) = Vector3.Cross(vec1, vec2)
+
+let multithreadRNG = new ThreadLocal<Random>(Func<Random>(fun () -> Random()))
+
+let multithreadRandom = fun () -> float32 (multithreadRNG.Value.NextDouble ())
