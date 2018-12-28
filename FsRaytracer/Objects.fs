@@ -28,9 +28,11 @@ let defaultCamera = { origin = (vec3 0.0f 0.0f 0.0f); vertical = (vec3 0.0f 2.0f
 
 type Rng = unit -> float32
 
-let randomInUnitSphere (rng: Rng) =
-    let randomNumbers () = Seq.initInfinite (fun _ -> rng ())
-    Seq.zip3 (randomNumbers ()) (randomNumbers ()) (randomNumbers ()) |> Seq.find (fun (x, y, z) -> ((mul 2.0f (vec3 x y z)) - Vector3.One).LengthSquared () < 1.0f) |> fun (a, b, c) -> vec3 a b c
+let rec randomInUnitSphere (rng: Rng) =
+    let p = 2.0f * (vec3 (rng ()) (rng ()) (rng ())) - Vector3.One
+    if p.LengthSquared () >= 1.0f then
+        randomInUnitSphere rng
+    else p
 
 type Ray = {
     origin: Vector3
