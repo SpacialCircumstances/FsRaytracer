@@ -6,6 +6,7 @@ open MathExt
 open Objects
 open FSharp.Collections.ParallelSeq
 open System.Diagnostics
+open System.Threading.Tasks
 
 type RenderSurface = {
     height: int
@@ -69,23 +70,33 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
             let h = float32 h
             let rng = createRng settings.rngSeed
             let render (world: SceneBody) (camera: Camera) (x: int) (y: int) =
-                let combinedColor = [ 0..level ]
-                                    |> PSeq.map (fun _ -> 
-                                        let u = (float32 x + rng ()) / w
-                                        let v = (float32 y + rng ()) / h
-                                        let ray = castRay camera u v
-                                        color ray rng world 0)
-                                    |> PSeq.fold (fun v n -> v + n) Vector3.Zero
-                                    |> div (float32 level)
-                (*let combinedColor = [ 0..level ] 
+                let combinedColor = [ 0..level ] 
                                     |> Seq.fold (fun c _ ->
                                     let u = (float32 x + rng ()) / w
                                     let v = (float32 y + rng ()) / h
                                     let ray = castRay camera u v
-                                    c + color ray rng world 0) Vector3.Zero*)
+                                    c + color ray rng world 0) Vector3.Zero
                 
                 colorModification (div (float32 level) combinedColor)
             render
+
+let parallelFor (start: int) (max: int) (iter: int -> unit) = Parallel.For(start, max, Action<int>(iter)) |> ignore
+
+let traceParallel (camera: Camera) (world: SceneBody) (settings: RenderSettings) (surface: RenderSurface) =
+    let { height = height; width = width; setColor = setColor } = surface
+    let renderer = createRenderer width height settings
+    let sw = Stopwatch()
+    do sw.Start()
+
+    parallelFor 0 height (fun y ->
+        parallelFor 0 width (fun x ->
+            let col = renderer world camera x y
+            setColor (x, y) col
+        )
+    )
+        
+    do sw.Stop()
+    sw.Elapsed
 
 let trace (camera: Camera) (world: SceneBody) (settings: RenderSettings) (surface: RenderSurface) =
     let { height = height; width = width; setColor = setColor } = surface
@@ -93,7 +104,7 @@ let trace (camera: Camera) (world: SceneBody) (settings: RenderSettings) (surfac
     let sw = Stopwatch()
     do sw.Start()
 
-    for y = (height - 1) downto 0 do
+    for y = 0 to height - 1 do
         for x = 0 to (width - 1) do
             let col = renderer world camera x y
             setColor (x, y) col
