@@ -4,7 +4,6 @@ open System.Numerics
 open System
 open MathExt
 open Objects
-open FSharp.Collections.ParallelSeq
 open System.Diagnostics
 open System.Threading.Tasks
 
