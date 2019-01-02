@@ -22,7 +22,7 @@ let main argv =
     let width = 200
     let height = 100
     let ar = (float32 width) / (float32 height)
-    let camera = fromOrigin 60.0f ar
+    let camera = fromOrigin 60.0f ar 2.0f 2.0f
     let r = pi / 4.0f
     let world = group [
         sphere (vec3 -r 0.0f -1.0f) r (lambertian (vec3 0.0f 0.0f 1.0f) rng);

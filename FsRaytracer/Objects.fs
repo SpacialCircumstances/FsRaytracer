@@ -8,23 +8,25 @@ type Camera = {
     lowerLeftCorner: Vector3
     horizontal: Vector3
     vertical: Vector3
+    lensRadius: float32
 }
 
-let createCamera (lookFrom: Vector3) (lookAt: Vector3) (up: Vector3) (verticalFov: float32) (aspectRatio: float32) =
+let createCamera (lookFrom: Vector3) (lookAt: Vector3) (up: Vector3) (verticalFov: float32) (aspectRatio: float32) (aperture: float32) (focusDistance: float32) =
+    let lensRadius = aperture / 2.0f
     let theta = (verticalFov * pi) / 180.0f
     let hh = tan (theta / 2.0f)
     let hw = aspectRatio * hh
     let w = norm (lookFrom - lookAt)
     let u = norm (crossP up w)
     let v = crossP w u
-    let llc = lookFrom - (u * hw) - (v * hh) - w
-    let horiz = 2.0f * hw * u
-    let vert = 2.0f * hh * v
-    { origin = lookFrom; vertical = vert; horizontal = horiz; lowerLeftCorner = llc }
+    let llc = lookFrom - (u * hw * focusDistance) - (v * hh * focusDistance) - (w * focusDistance)
+    let horiz = 2.0f * hw * u * focusDistance
+    let vert = 2.0f * hh * v * focusDistance
+    { origin = lookFrom; vertical = vert; horizontal = horiz; lowerLeftCorner = llc; lensRadius = lensRadius }
 
 let fromOrigin = createCamera Vector3.Zero (vec3 0.0f 0.0f -1.0f) (vec3 0.0f 1.0f 0.0f)
 
-let defaultCamera = { origin = (vec3 0.0f 0.0f 0.0f); vertical = (vec3 0.0f 2.0f 0.0f); horizontal = (vec3 4.0f 0.0f 0.0f); lowerLeftCorner = (vec3 -2.0f -1.0f -1.0f) }
+let defaultCamera = { origin = (vec3 0.0f 0.0f 0.0f); vertical = (vec3 0.0f 2.0f 0.0f); horizontal = (vec3 4.0f 0.0f 0.0f); lowerLeftCorner = (vec3 -2.0f -1.0f -1.0f); lensRadius = 1.0f }
 
 type Rng = unit -> float32
 
