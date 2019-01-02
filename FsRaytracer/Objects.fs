@@ -34,6 +34,13 @@ let rec randomInUnitSphere (rng: Rng) =
         randomInUnitSphere rng
     else p
 
+
+let rec randomInUnitDisk (rng: Rng) =
+    let p = 2.0f * (vec3 (rng ()) (rng ()) 0.0f) - (vec3 1.0f 1.0f 0.0f)
+    if dotP p p >= 1.0f then
+        randomInUnitDisk rng
+    else p
+
 type Ray = {
     origin: Vector3
     direction: Vector3
