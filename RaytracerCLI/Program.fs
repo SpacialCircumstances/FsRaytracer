@@ -21,9 +21,17 @@ let randomScene =
     let ground = sphere (vec3 0.0f -1000.0f 0.0f) 1000.0f (lambertian (vec3 0.5f 0.5f 0.5f) rng)
     let rp () = rng () - 0.5f
     let randomSpheres = [0..100] |> List.map (fun _ ->
+        let materialType = rng ()
         let y = (rng () * 0.5f) + 0.1f
         let center = (vec3 (rp ()) (y / 10.0f) (rp ())) * 10.0f
-        sphere center y (lambertian (vec3 (rng ()) (rng ()) (rng ())) rng)
+        if materialType < 0.6f then
+            let randomColor = vec3 (rng ()) (rng ()) (rng ())
+            sphere center y (lambertian randomColor rng)
+        elif materialType < 0.9f then
+            let randomColor = vec3 (rng ()) (rng ()) (rng ())
+            sphere center y (metal randomColor (rng ()) rng)
+        else
+            sphere center y (dielectric (rng ()) rng)
     )
     ground :: randomSpheres
     
