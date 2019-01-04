@@ -9,6 +9,9 @@ type Camera = {
     horizontal: Vector3
     vertical: Vector3
     lensRadius: float32
+    u: Vector3
+    v: Vector3
+    w: Vector3
 }
 
 let createCamera (lookFrom: Vector3) (lookAt: Vector3) (up: Vector3) (verticalFov: float32) (aspectRatio: float32) (aperture: float32) (focusDistance: float32) =
@@ -22,11 +25,9 @@ let createCamera (lookFrom: Vector3) (lookAt: Vector3) (up: Vector3) (verticalFo
     let llc = lookFrom - (u * hw * focusDistance) - (v * hh * focusDistance) - (w * focusDistance)
     let horiz = 2.0f * hw * u * focusDistance
     let vert = 2.0f * hh * v * focusDistance
-    { origin = lookFrom; vertical = vert; horizontal = horiz; lowerLeftCorner = llc; lensRadius = lensRadius }
+    { origin = lookFrom; vertical = vert; horizontal = horiz; lowerLeftCorner = llc; lensRadius = lensRadius; u = u; v = v; w = w }
 
 let fromOrigin = createCamera Vector3.Zero (vec3 0.0f 0.0f -1.0f) (vec3 0.0f 1.0f 0.0f)
-
-let defaultCamera = { origin = (vec3 0.0f 0.0f 0.0f); vertical = (vec3 0.0f 2.0f 0.0f); horizontal = (vec3 4.0f 0.0f 0.0f); lowerLeftCorner = (vec3 -2.0f -1.0f -1.0f); lensRadius = 1.0f }
 
 type Rng = unit -> float32
 
@@ -52,8 +53,10 @@ let inline calculatePosition (ray: Ray) (p: float32) = ray.origin + (p * ray.dir
 
 let inline makeRay (origin: Vector3) (direction: Vector3) = { origin = origin; direction = direction }
 
-let inline castRay (camera: Camera) (u: float32) (v: float32) =
-    makeRay camera.origin (camera.lowerLeftCorner + (mul u camera.horizontal) + (mul v camera.vertical) - camera.origin)
+let inline castRay (camera: Camera) (rng: Rng) (s: float32) (t: float32) =
+    let rand = (randomInUnitDisk rng) * camera.lensRadius
+    let offset = (camera.u * rand.X) + (camera.v * rand.Y)
+    makeRay (camera.origin + offset) (camera.lowerLeftCorner + (camera.horizontal * s) + (camera.vertical * t) - camera.origin - offset)
 
 type Material = Ray -> Hit -> (Vector3 * Ray) option
 
@@ -150,5 +153,3 @@ let dielectric (ri: float32) (rng: Rng) =
                                     Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position refracted)
                             | None ->
                                 Some (vec3 1.0f 1.0f 1.0f, makeRay hit.position (reflect ray.direction hit.normal))
-        
-                                

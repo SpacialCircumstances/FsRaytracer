@@ -56,7 +56,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
             let render (world: SceneBody) (camera: Camera) (x: int) (y: int) =
                 let u = (float32 x) / w
                 let v = (float32 y) / h
-                let ray = castRay camera u v
+                let ray = castRay camera rng u v
                 colorModification (color ray rng world 0)
             render
         | On level ->
@@ -68,7 +68,7 @@ let createRenderer (w: int) (h: int) (settings: RenderSettings) =
                                     |> Seq.fold (fun c _ ->
                                     let u = (float32 x + rng ()) / w
                                     let v = (float32 y + rng ()) / h
-                                    let ray = castRay camera u v
+                                    let ray = castRay camera rng u v
                                     c + color ray rng world 0) Vector3.Zero
                 
                 colorModification (div (float32 level) combinedColor)
